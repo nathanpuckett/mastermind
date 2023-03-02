@@ -8,17 +8,36 @@
 class Game
   def initialize
     @code = generate_code
-    @turns_left = 12
+    @turn_count = 1
   end
 
-  attr_reader :code, :turns_left
+  attr_reader :code, :turn_count
 
   def play
     loop do
-      puts "Turns left: #{@turns_left}"
-      @turns_left -= 1
-      return if turns_left.zero?
+      guess = make_guess
+      if check_guess(guess)
+        puts 'You Win!'
+        return
+      end
+      return unless increment_turn
     end
+  end
+
+  def make_guess
+    print "Guess #{@turn_count}: "
+    gets.chomp.split('').map(&:to_i)
+  end
+
+  def check_guess(guess)
+    return true if guess == @code
+  end
+
+  def increment_turn
+    @turn_count += 1
+    return true unless @turn_count > 12
+
+    puts 'Game Over'
   end
 
   def generate_code
@@ -26,6 +45,7 @@ class Game
     4.times do
       code_arr << rand(1..6)
     end
+    p code_arr
     code_arr
   end
 end
