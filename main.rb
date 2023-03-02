@@ -46,28 +46,36 @@ class Game
   def check_guess
     return true if @guess == @code
 
-    check_hits
-    check_blows
+    @temp_guess = @guess.dup
+    @temp_code = @code.dup
+
+    check_hits(@temp_guess, @temp_code)
+    check_blows(@temp_guess, @temp_code)
+    p @temp_guess
+    p @temp_code
+    p @code
 
     false
   end
 
-  def check_hits
-    @guess.each_with_index do |n, i|
-      next unless n == @code[i]
+  def check_hits(guess, code)
+    guess.each_with_index do |n, i|
+      next unless n == code[i]
 
       @hits += 1
-      @guess[i] = 0
+      @temp_guess.delete_at(i)
+      @temp_code.delete_at(i)
     end
   end
 
-  def check_blows
-    @guess.each do |x|
-      @code.each do |y|
+  def check_blows(guess, code)
+    guess.each_with_index do |x, x_ind|
+      code.each_with_index do |y, y_ind|
         next unless x == y
 
         @blows += 1
-        x = 0
+        @temp_guess.delete_at(x_ind)
+        @temp_code.delete_at(y_ind)
       end
     end
   end
@@ -78,7 +86,7 @@ class Game
     @blows = 0
     return true unless @turn_count > 12
 
-    puts "\nGame Over. You Suck!"
+    puts "\nGame Over. The Code Was #{@code.join}."
   end
 
   def generate_code
