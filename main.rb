@@ -1,32 +1,21 @@
 # frozen_string_literal: true
 
-# 4 pegs, 6 colors
-# "colors" 1-6
-# code example: '1234', '3456', '1122'
-
 # Game Class
 class Game
-  @@intro = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" \
-            "|                             |\n" \
-            "|     M A S T E R M I N D     |\n" \
-            "|                             |\n" \
-            "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" \
-            "\nHit: Correct Color & Position\n" \
-            "Blow: Correct Color Only\n" \
-            "\n------------------------------"
-
-  def initialize
-    @code = generate_code
+  def initialize(codemaker_class, codebreaker_class)
+    @codemaker = codemaker_class.new
+    @codebreaker = codebreaker_class.new
+    @code = @codemaker.generate_code
     @guess = []
     @turn_count = 1
     @hits = 0
     @blows = 0
   end
 
-  # attr_reader :code, :turn_count
+  attr_reader :code, :turn_count
 
   def play
-    puts @@intro
+    p @code
     loop do
       @guess = make_guess
       if check_guess
@@ -51,9 +40,6 @@ class Game
 
     check_hits(@temp_guess, @temp_code)
     check_blows(@temp_guess, @temp_code)
-    p @temp_guess
-    p @temp_code
-    p @code
 
     false
   end
@@ -63,8 +49,8 @@ class Game
       next unless n == code[i]
 
       @hits += 1
-      @temp_guess.delete_at(i)
-      @temp_code.delete_at(i)
+      @temp_guess[i] = -1
+      @temp_code[i] = -2
     end
   end
 
@@ -74,8 +60,8 @@ class Game
         next unless x == y
 
         @blows += 1
-        @temp_guess.delete_at(x_ind)
-        @temp_code.delete_at(y_ind)
+        @temp_guess[x_ind] = -1
+        @temp_code[y_ind] = -2
       end
     end
   end
@@ -89,26 +75,52 @@ class Game
     puts "\nGame Over. The Code Was #{@code.join}."
   end
 
-  def generate_code
-    code_arr = []
-    4.times do
-      code_arr << rand(1..6)
-    end
-    p code_arr
-    code_arr
-  end
 end
 
 class Player
 
 end
 
+# Human Player Class
 class HumanPlayer < Player
-
+  def generate_code
+    print "\nPlease Input A Code: "
+    gets.chomp.split('').map(&:to_i)
+  end
 end
 
+# Computer Player Class
 class ComputerPlayer < Player
-
+  def generate_code
+    puts "\nThe Computer Has Picked A Code!"
+    code_arr = []
+    4.times do
+      code_arr << rand(1..6)
+    end
+    # p code_arr
+    code_arr
+  end
 end
 
-Game.new.play
+puts "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" \
+     "|                             |\n" \
+     "|     M A S T E R M I N D     |\n" \
+     "|                             |\n" \
+     "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" \
+     "\n- 4 Digits, Numbers 1-6" \
+     "\n- Possible Duplicates" \
+     "\n- Hit: Correct Number & Position" \
+     "\n- Blow: Correct Number Only\n" \
+     "\n-------------------------------"
+
+print "\nCodemaker or Codebreaker? (1 or 2): "
+player_selection = gets.chomp.to_i
+if player_selection == 1
+  codemaker = HumanPlayer
+  codebreaker = ComputerPlayer
+else
+  codemaker = ComputerPlayer
+  codebreaker = HumanPlayer
+end
+
+Game.new(codemaker, codebreaker).play
