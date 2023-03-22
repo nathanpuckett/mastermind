@@ -15,11 +15,11 @@ class Game
   attr_reader :code, :turn_count
 
   def play
-    p @code
     loop do
-      @guess = make_guess
+      print "\nGuess #{@turn_count}: "
+      @guess = @codebreaker.make_guess(@code)
       if check_guess
-        puts "\nYou Win! Code Guessed in #{@turn_count} Moves."
+        announce_winner
         return
       end
       puts "\nHits: #{@hits} Blows: #{@blows}"
@@ -27,9 +27,8 @@ class Game
     end
   end
 
-  def make_guess
-    print "\nGuess #{@turn_count}: "
-    gets.chomp.split('').map(&:to_i)
+  def announce_winner
+    puts "\nYou Win! Code Guessed in #{@turn_count} Moves."
   end
 
   def check_guess
@@ -40,7 +39,7 @@ class Game
 
     check_hits(@temp_guess, @temp_code)
     check_blows(@temp_guess, @temp_code)
-
+    sleep(0.5)
     false
   end
 
@@ -74,31 +73,57 @@ class Game
 
     puts "\nGame Over. The Code Was #{@code.join}."
   end
-
-end
-
-class Player
-
 end
 
 # Human Player Class
-class HumanPlayer < Player
+class HumanPlayer
   def generate_code
     print "\nPlease Input A Code: "
+    gets.chomp.split('').map(&:to_i)
+  end
+
+  def make_guess(_)
     gets.chomp.split('').map(&:to_i)
   end
 end
 
 # Computer Player Class
-class ComputerPlayer < Player
+class ComputerPlayer
+  def initialize
+    @init_guess = [1, 1, 1, 1]
+    @current_guess = [0, 0, 0, 0]
+    @turn_count = 1
+  end
+
   def generate_code
     puts "\nThe Computer Has Picked A Code!"
+    rand_code
+  end
+
+  def rand_code
     code_arr = []
     4.times do
       code_arr << rand(1..6)
     end
-    # p code_arr
     code_arr
+  end
+
+  def make_guess(code)
+    @current_guess = new_guess(code)
+    sleep(0.5)
+    puts @current_guess.join
+    @turn_count += 1
+    @current_guess
+  end
+
+  def new_guess(code)
+    return @init_guess if @turn_count == 1
+
+    @current_guess.each_with_index do |n, i|
+      @current_guess[i] += 1 unless n == code[i]
+    end
+
+    @current_guess
   end
 end
 
@@ -123,4 +148,5 @@ else
   codebreaker = HumanPlayer
 end
 
-Game.new(codemaker, codebreaker).play
+new_game = Game.new(codemaker, codebreaker)
+new_game.play
